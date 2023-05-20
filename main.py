@@ -3,10 +3,12 @@ from dotenv import load_dotenv
 from notion_client import Client
 import re
 import datetime
+from SlackWrapper import SlackWrapper
 
 load_dotenv()
 
 notion = Client(auth=os.getenv('NOTION_AUTH_KEY'))
+slack_app = SlackWrapper(os.getenv("SLACK_KEY"))
 
 db_identifier = os.getenv('TASK_DB')
 task_url_prefix = os.getenv("TASK_URL_PREFIX")
@@ -18,6 +20,7 @@ results = notion.databases.query(
 ).get("results")
 
 alerts = []
+task_dris_slack_ids = []
 
 for result in results:
     alert = {"task_name": "", "task_url":"", "DRIs": [], "info": [], "warnings":[], "errors": []}
@@ -37,7 +40,14 @@ for result in results:
             if len(assigned_people) >= 1:
                 for people in assigned_people:
                     func_id = people['id']
-                    dris.append(notion.users.retrieve(func_id)["person"]["email"])
+                    dri = notion.users.retrieve(func_id)["person"]["email"]
+                    dris.append(dri)
+                    try:
+                        uid = slack_app.members[dri]
+                        if uid not in task_dris_slack_ids:
+                            task_dris_slack_ids.append(uid)
+                    except KeyError:
+                        continue
             else:
                 alert["errors"].append("No DRI has been assigned.")
             
@@ -55,3 +65,5 @@ for result in results:
             continue
         else:
             alerts.append(alert)
+
+slack_app.client.usergroups_users_update(usergroup=os.getenv('DRI_USER_GROUP'), users=",".join(task_dris_slack_ids))
