@@ -4,6 +4,7 @@ from notion_client import Client
 import re
 import datetime
 from SlackWrapper import SlackWrapper
+import json
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ results = notion.databases.query(
 
 alerts = []
 task_dris_slack_ids = []
+overrides = json.load(open("override.json"))
 
 for result in results:
     alert = {"task_name": "", "task_url":"", "DRIs": [], "info": [], "warnings":[], "errors": []}
@@ -41,6 +43,10 @@ for result in results:
                 for people in assigned_people:
                     func_id = people['id']
                     dri = notion.users.retrieve(func_id)["person"]["email"]
+
+                    if dri in overrides.keys():
+                        dri = overrides[dri]
+
                     dris.append(dri)
                     try:
                         uid = slack_app.members[dri]
