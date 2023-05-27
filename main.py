@@ -26,7 +26,7 @@ task_url_prefix = os.getenv("TASK_URL_PREFIX")
 
 roadmap = RoadMap(project_db_identifier, task_db_identifier, notion)
 print(roadmap.projects)
-print(roadmap.tasks)
+# print(roadmap.tasks)
 
 
 # for result in project_results:

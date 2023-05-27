@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional, List
 from User import User
+from Task import Task
 
 class Status(Enum):
     NOT_STARTED = "Not started"
@@ -42,16 +43,20 @@ class DateRange:
 @dataclass
 class Project:
     project_name: str
+    project_id: str
     status: Status
     timeline: DateRange
     dri_emails: List[str]
     task_ids: List[str]
     project_url: str
+    tasks: List[Task]
 
-    def __init__(self, name: str, status: Status, dri_emails: List[User], task_ids: List[str], project_url: str, timeline: Optional[DateRange] = None):
+    def __init__(self, name: str, prj_id: str, status: Status, dri_emails: List[User], task_ids: List[str], project_url: str, timeline: Optional[DateRange] = None):
         self.project_name = name
+        self.project_id = prj_id
         self.status = status
         self.timeline = timeline
         self.dri_emails = dri_emails
         self.task_ids = task_ids
         self.project_url = project_url
+        self.tasks = []

@@ -1,8 +1,42 @@
 from dataclasses import dataclass
 from typing import Optional, List
 from User import User
-from Project import DateRange, Status
 from enum import Enum
+from datetime import datetime, timedelta
+
+class Status(Enum):
+    NOT_STARTED = "Not started"
+    ON_HOLD = "On Hold"
+    IN_PROGRESS = "In progress"
+    DONE = "Done"
+
+    @staticmethod
+    def from_str(label):
+        if label in ("Not started"):
+            return Status.NOT_STARTED
+        elif label in ("On Hold"):
+            return Status.ON_HOLD
+        elif label in ("In progress"):
+            return Status.IN_PROGRESS
+        elif label in ("Done"):
+            return Status.DONE
+        else:
+            raise NotImplementedError
+
+@dataclass
+class DateRange:
+    end_date: datetime
+    start_date: Optional[datetime]
+
+    def __init__(self, end_date: datetime, start_date: Optional[datetime] = None):
+        self.start_date = start_date
+        self.end_date = end_date
+    
+    def is_overdue() -> bool:
+        return datetime.now() > end_date
+    
+    def days_overdue() -> timedelta:
+        return datetime.now() - end_date
 
 class Priority(Enum):
     P1 = "P1"
@@ -10,6 +44,7 @@ class Priority(Enum):
     P3 = "P3"
     P4 = "P4"
     P5 = "P5"
+    null = "null"
 
     @staticmethod
     def from_str(label):
