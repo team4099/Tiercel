@@ -82,4 +82,28 @@ class Task:
         self.related_project_ids = related_project_id
         self.notion_url = notion_url
 
+    def info(self) -> List[str]:
+        ret_val = []
+
+        return ret_val
+
+    def warnings(self) -> List[str]:
+        ret_val = []
+
+        if self.timeline != None and self.timeline.is_overdue():
+            ret_val.append(f"Task is {self.timeline.days_overdue()} Day(s) Overdue.")
+
+        return ret_val
+    
+    def errors(self) -> List[str]:
+        ret_val = []
+
+        if len(self.dri_emails) == 0:
+            ret_val.append("No Task DRI(s) Assigned.")
+
+        if self.timeline == None:
+            ret_val.append("No Due Date for Task.")
+        
+        return ret_val
+
 

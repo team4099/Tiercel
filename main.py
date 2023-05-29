@@ -6,158 +6,192 @@ import datetime
 from SlackWrapper import SlackWrapper
 import json
 from RoadMap import RoadMap
+from Project import Status
 
 load_dotenv()
 
 notion = Client(auth=os.getenv('NOTION_AUTH_KEY'))
-# slack_app = SlackWrapper(os.getenv("SLACK_KEY"))
+slack_app = SlackWrapper(os.getenv("SLACK_KEY"))
 
 task_db_identifier = os.getenv('TASK_DB')
 project_db_identifier = os.getenv('PROJECT_DB')
 task_url_prefix = os.getenv("TASK_URL_PREFIX")
 
-# results = notion.databases.query( 
-#     database_id=task_db_identifier
-# ).get("results")
-
-# project_results = notion.databases.query( 
-#     database_id=project_db_identifier
-# )
+overrides = json.load(open("override.json"))
 
 roadmap = RoadMap(project_db_identifier, task_db_identifier, notion)
-print(roadmap.projects)
-# print(roadmap.tasks)
 
+project_dris = []
+task_dris = []
 
-# for result in project_results:
-#     print(result['properties'])
+for project in roadmap.projects:
+    if project.status != Status.DONE:
 
-# alerts = []
-# task_dris_slack_ids = []
-# overrides = json.load(open("override.json"))
+        project_dri_mentions = [] 
+        for user in project.dri_emails:
+            email = user.email
 
-# for result in results:
-#     alert = {"task_name": "", "task_url":"", "DRIs": [], "info": [], "warnings":[], "errors": []}
-#     properties = result['properties']
-#     alert["task_url"] = result["url"]
+            if email in overrides.keys():
+                email = overrides[email]
 
-#     status = properties["Status"]['status']['name']
+            try:
+                uid = slack_app.members[email]
+                if uid not in project_dris:
+                    project_dris.append(uid)
+                project_dri_mentions.append(f"<@{uid}>")
+            except KeyError:
+                continue
 
-#     if status != "Done":
-#         task_title_info = properties['Name']
-#         if task_title_info["title"] != []:
-#             task_name = task_title_info['title'][0]['text']['content']
-#             alert["task_name"] = task_name
-#             dris = []
+        block = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*<{project.project_url}|{project.project_name}>*",
+                }
+		    },
+        ]
 
-#             assigned_people = properties['Assigned to']['people']
-#             if len(assigned_people) >= 1:
-#                 for people in assigned_people:
-#                     func_id = people['id']
-#                     dri = notion.users.retrieve(func_id)["person"]["email"]
+        if (len(project_dri_mentions) >= 1):
+                block.append(
+                        {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f':office_worker:: {""" """.join(project_dri_mentions)}'
+                    }
+                },
+                )
 
-#                     if dri in overrides.keys():
-#                         dri = overrides[dri]
+        project_info = "\n• ".join(project.info())
+        project_warning = "\n• ".join(project.warnings())
+        project_errors = "\n• ".join(project.errors())
 
-#                     try:
-#                         uid = slack_app.members[dri]
-#                         if uid not in task_dris_slack_ids:
-#                             task_dris_slack_ids.append(uid)
-#                         dris.append(f"<@{uid}>")
-#                     except KeyError:
-#                         continue
-#             else:
-#                 alert["errors"].append("No DRI has been assigned.")
-            
-#             alert["DRIs"] = dris
-
-#             due_date_string = properties["Due Date"]['date']
-#             if due_date_string != None:
-#                 due_date = datetime.datetime.strptime(due_date_string['start'], "%Y-%m-%d")
-#                 if datetime.datetime.now() > due_date:
-#                     alert["warnings"].append(f"{task_name} is {(datetime.datetime.now() - due_date).days} day(s) overdue")
-#             else:
-#                 alert["errors"].append("No Due Date.")
+        if len(project_info) >= 1:
+            block.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f":information_source::\n• {project_info}"
+                }
+		    }
+            )
+    
+        if len(project_warning) >= 1:
+            block.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f":warning::\n• {project_warning}"
+                }
+            })
         
-#         if len(alert["info"]) == len(alert["warnings"]) == len(alert["errors"]) == 0:
-#             continue
-#         else:
-#             alerts.append(alert)
+        if len(project_errors) >= 1:
+            block.append({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f":octagonal_sign::\n• {project_errors}"
+                }
+            })
 
-# message = []
+        block += [
+            {
+                "type": "divider"
+            }]
 
-# for alert in alerts:
-#     task_name = alert["task_name"]
-#     task_url = alert["task_url"]
-#     dri_string = " ".join(alert["DRIs"])
-#     info = "\n• ".join(alert["info"])
-#     warnings = "\n• ".join(alert["warnings"])
-#     errors = "\n• ".join(alert["errors"])
+        response = slack_app.client.chat_postMessage(
+            channel="#log_notion_notifs",
+            link_names=True,
+            blocks=block
+        )
 
-#     message.append(
-# 		{
-# 			"type": "section",
-# 			"text": {
-# 				"type": "mrkdwn",
-# 				"text": f"*<{task_url}|{task_name}>*",
-# 			}
-# 		}
-#     )
+        project_thread = response.get("ts")
 
-#     message.append(
-# 		{
-# 			"type": "section",
-# 			"text": {
-# 				"type": "mrkdwn",
-# 				"text": f"*DRIs*:office_worker:: {dri_string}"
-# 			}
-# 		}
-#     )
+        for task in project.tasks:
 
-#     if len(info) >= 1:
-#         message.append({
-# 			"type": "section",
-# 			"text": {
-# 				"type": "mrkdwn",
-# 				"text": f"*Info* :information_source::\n• {info}"
-# 			}
-# 		})
-    
-#     if len(warnings) >= 1:
-#         message.append({
-# 			"type": "section",
-# 			"text": {
-# 				"type": "mrkdwn",
-# 				"text": f"*Warnings* :warning::\n• {warnings}"
-# 			}
-# 		})
-    
-#     if len(errors) >= 1:
-#         message.append({
-# 			"type": "section",
-# 			"text": {
-# 				"type": "mrkdwn",
-# 				"text": f"*Errors* :octagonal_sign::\n• {errors}"
-# 			}
-# 		})
+            if task.status != Status.DONE:
 
-#     message += [
-# 		{
-# 			"type": "divider"
-# 		}]
-    
-#     if len(message) >= 42:
-#         response = slack_app.client.chat_postMessage(
-#             channel='#log_notion_notifs',
-#             link_names=True,
-#             blocks=message)
-#         message = []
-#     else:
-#         continue
+                task_dri_mentions = [] 
+                for user in task.dri_emails:
+                    email = user.email
 
-# response = slack_app.client.chat_postMessage(
-#             channel='#log_notion_notifs',
-#             link_names=True,
-#             blocks=message)
+                    if email in overrides.keys():
+                        email = overrides[email]
 
-# slack_app.client.usergroups_users_update(usergroup=os.getenv('DRI_USER_GROUP'), users=",".join(task_dris_slack_ids))
+                    try:
+                        uid = slack_app.members[email]
+                        if uid not in task_dris:
+                            task_dris.append(uid)
+                        task_dri_mentions.append(f"<@{uid}>")
+                    except KeyError:
+                        continue
+                
+                block = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"*<{task.notion_url}|{task.task_name}>*",
+                    }
+                },
+                ]
+
+                if (len(task_dri_mentions) >= 1):
+                    block.append(
+                            {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f':office_worker:: {""" """.join(task_dri_mentions)}'
+                        }
+                    },
+                    )
+
+                task_info = "\n• ".join(task.info())
+                task_warning = "\n• ".join(task.warnings())
+                task_errors = "\n• ".join(task.errors())
+
+                if len(task_info) >= 1:
+                    block.append({
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f":information_source:\n• {task_info}"
+                        }
+                    }
+                    )
+            
+                if len(task_warning) >= 1:
+                    block.append({
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f":warning:\n• {task_warning}"
+                        }
+                    })
+                
+                if len(task_errors) >= 1:
+                    block.append({
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f":octagonal_sign:\n• {task_errors}"
+                        }
+                    })
+
+                block += [
+                    {
+                        "type": "divider"
+                    }]
+
+                slack_app.client.chat_postMessage(
+                    channel="log_notion_notifs",
+                    link_names=True,
+                    blocks=block,
+                    thread_ts=project_thread
+                )
+
+slack_app.client.usergroups_users_update(usergroup=os.getenv('PROJECT_DRI_USER_GROUP'), users=",".join(project_dris))
+
+slack_app.client.usergroups_users_update(usergroup=os.getenv('TASK_DRI_USER_GROUP'), users=",".join(task_dris))

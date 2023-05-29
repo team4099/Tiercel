@@ -13,8 +13,6 @@ class RoadMap:
         project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
         task_dict = notion_client.databases.query(database_id = task_db_identifier).get("results")
 
-        # print(json.dumps(project_dict, indent=2))
-
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
         
@@ -22,21 +20,22 @@ class RoadMap:
 def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
     projects = []
     for project in project_dict:
-        new_project = Project(
-                name = project["properties"]["Name"]["title"][0]["text"]["content"],
-                prj_id = project["id"],
-                status = Status.from_str(project["properties"]["Status"]["status"]["name"]),
-                timeline = parse_timeline(project["properties"]["Timeline"]["date"]),
-                dri_emails = parse_dri_emails(project["properties"]["DRI"]["people"]),
-                task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
-                project_url = project["url"]
+        if (len(project["properties"]["Name"]["title"]) >= 1):
+            new_project = Project(
+                    name = project["properties"]["Name"]["title"][0]["text"]["content"],
+                    prj_id = project["id"],
+                    status = Status.from_str(project["properties"]["Status"]["status"]["name"]),
+                    timeline = parse_timeline(project["properties"]["Timeline"]["date"]),
+                    dri_emails = parse_dri_emails(project["properties"]["DRI"]["people"]),
+                    task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
+                    project_url = project["url"]
+                )
+
+            projects.append(
+                new_project
             )
 
-        projects.append(
-            new_project
-        )
-
-        new_project.tasks = [find_task_by_id(self, task_name) for task_name in new_project.task_ids]
+            new_project.tasks = [find_task_by_id(self, task_name) for task_name in new_project.task_ids]
     return projects
     
 def parse_timeline(date_dict: dict) -> Optional[DateRange]:

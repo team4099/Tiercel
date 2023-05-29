@@ -33,14 +33,13 @@ class DateRange:
         self.start_date = start_date
         self.end_date = end_date
     
-    def is_overdue() -> bool:
-        return datetime.now() > end_date
+    def is_overdue(self) -> bool:
+        return datetime.now() > self.end_date
     
-    def days_overdue() -> timedelta:
-        return datetime.now() - end_date
+    def days_overdue(self) -> int:
+        return (datetime.now() - self.end_date).days
 
 
-@dataclass
 class Project:
     project_name: str
     project_id: str
@@ -60,3 +59,30 @@ class Project:
         self.task_ids = task_ids
         self.project_url = project_url
         self.tasks = []
+    
+    def is_finished(self) -> bool:
+        return self.status == Status.DONE
+
+    def info(self) -> List[str]:
+        ret_val = []
+
+        return ret_val
+
+    def warnings(self) -> List[str]:
+        ret_val = []
+
+        if self.timeline != None and self.timeline.is_overdue():
+            ret_val.append(f"Project is {self.timeline.days_overdue()} day(s) overdue.")
+        
+        return ret_val
+    
+    def errors(self) -> List[str]:
+        ret_val = []
+
+        if len(self.dri_emails) == 0:
+            ret_val.append("No Project DRI assigned.")
+
+        if self.timeline == None:
+            ret_val.append("No existing timeline for project.")
+        
+        return ret_val
