@@ -1,9 +1,10 @@
 from typing import List, Optional
-from Project import Project, Status, DateRange
+from Project import Project, DateRange
 from User import User
 from datetime import datetime
 from Task import Task, Priority
 import json
+from Status import Status
 
 class RoadMap:
     projects: List[Project]

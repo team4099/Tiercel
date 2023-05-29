@@ -4,25 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from User import User
 from Task import Task
-
-class Status(Enum):
-    NOT_STARTED = "Not started"
-    ON_HOLD = "On Hold"
-    IN_PROGRESS = "In progress"
-    DONE = "Done"
-
-    @staticmethod
-    def from_str(label):
-        if label in ("Not started"):
-            return Status.NOT_STARTED
-        elif label in ("On Hold"):
-            return Status.ON_HOLD
-        elif label in ("In progress"):
-            return Status.IN_PROGRESS
-        elif label in ("Done"):
-            return Status.DONE
-        else:
-            raise NotImplementedError
+from Status import Status
 
 @dataclass
 class DateRange:
@@ -34,8 +16,8 @@ class DateRange:
         self.end_date = end_date
     
     def is_overdue(self) -> bool:
-        return datetime.now() > self.end_date
-    
+        return (datetime.now() - self.end_date).days > 0
+
     def days_overdue(self) -> int:
         return (datetime.now() - self.end_date).days
 
@@ -71,7 +53,7 @@ class Project:
     def warnings(self) -> List[str]:
         ret_val = []
 
-        if self.timeline != None and self.timeline.is_overdue():
+        if self.timeline != None and self.timeline.is_overdue() and self.status != Status.DONE:
             ret_val.append(f"Project is {self.timeline.days_overdue()} day(s) overdue.")
         
         return ret_val
@@ -86,3 +68,23 @@ class Project:
             ret_val.append("No existing timeline for project.")
         
         return ret_val
+    
+    def has_issues(self) -> bool:
+        return len(self.info()) != 0 or len(self.warnings()) != 0 or len(self.errors()) != 0 
+    
+    def has_sub_issues(self) -> bool:
+        ret_val = False
+
+        for task in self.tasks:
+            ret_val = ret_val or task.has_issues()
+        
+        return ret_val
+    
+    def sub_tasks_are_done(self) -> bool:
+        ret_val = True
+
+        for task in self.tasks:
+            ret_val = ret_val and task.status == Status.DONE
+        
+        return ret_val
+

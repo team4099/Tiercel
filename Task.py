@@ -3,25 +3,7 @@ from typing import Optional, List
 from User import User
 from enum import Enum
 from datetime import datetime, timedelta
-
-class Status(Enum):
-    NOT_STARTED = "Not started"
-    ON_HOLD = "On Hold"
-    IN_PROGRESS = "In progress"
-    DONE = "Done"
-
-    @staticmethod
-    def from_str(label):
-        if label in ("Not started"):
-            return Status.NOT_STARTED
-        elif label in ("On Hold"):
-            return Status.ON_HOLD
-        elif label in ("In progress"):
-            return Status.IN_PROGRESS
-        elif label in ("Done"):
-            return Status.DONE
-        else:
-            raise NotImplementedError
+from Status import Status
 
 @dataclass
 class DateRange:
@@ -32,11 +14,11 @@ class DateRange:
         self.start_date = start_date
         self.end_date = end_date
     
-    def is_overdue() -> bool:
-        return datetime.now() > end_date
+        def is_overdue(self) -> bool:
+            return (datetime.now() - self.end_date).days > 0
     
-    def days_overdue() -> timedelta:
-        return datetime.now() - end_date
+        def days_overdue(self) -> int:
+            return (datetime.now() - self.end_date).days
 
 class Priority(Enum):
     P1 = "P1"
@@ -90,7 +72,7 @@ class Task:
     def warnings(self) -> List[str]:
         ret_val = []
 
-        if self.timeline != None and self.timeline.is_overdue():
+        if self.timeline != None and self.timeline.is_overdue() and self.status != Status.DONE:
             ret_val.append(f"Task is {self.timeline.days_overdue()} Day(s) Overdue.")
 
         return ret_val
@@ -105,5 +87,7 @@ class Task:
             ret_val.append("No Due Date for Task.")
         
         return ret_val
-
+    
+    def has_issues(self) -> bool:
+        return len(self.info()) != 0 or len(self.warnings()) != 0 or len(self.errors()) != 0 
 

@@ -6,16 +6,22 @@ import datetime
 from SlackWrapper import SlackWrapper
 import json
 from RoadMap import RoadMap
-from Project import Status
+from Status import Status
+
+TASK_DB = "88de9a3cf5554dd9a20476bc465cc68f"
+PROJECT_DB = "adddfaea7fa7475eb04e4fc530af6932"
+DRI_USER_GROUP = "S058TKUAX60"
+PROJECT_DRI_USER_GROUP = "S05A84CKV09"
+TASK_DRI_USER_GROUP = "S059NSGGY1L"
+NOTIF_CHANNEL="#log_notion_notifs"
 
 load_dotenv()
 
 notion = Client(auth=os.getenv('NOTION_AUTH_KEY'))
 slack_app = SlackWrapper(os.getenv("SLACK_KEY"))
 
-task_db_identifier = os.getenv('TASK_DB')
-project_db_identifier = os.getenv('PROJECT_DB')
-task_url_prefix = os.getenv("TASK_URL_PREFIX")
+task_db_identifier = TASK_DB
+project_db_identifier = PROJECT_DB
 
 overrides = json.load(open("override.json"))
 
@@ -100,13 +106,15 @@ for project in roadmap.projects:
                 "type": "divider"
             }]
 
-        response = slack_app.client.chat_postMessage(
-            channel="#log_notion_notifs",
-            link_names=True,
-            blocks=block
-        )
+        if (project.has_issues() or project.has_sub_issues()):
 
-        project_thread = response.get("ts")
+            response = slack_app.client.chat_postMessage(
+                channel=NOTIF_CHANNEL,
+                link_names=True,
+                blocks=block
+            )
+
+            project_thread = response.get("ts")
 
         for task in project.tasks:
 
@@ -184,14 +192,15 @@ for project in roadmap.projects:
                     {
                         "type": "divider"
                     }]
+                
+                if task.has_issues():
+                    slack_app.client.chat_postMessage(
+                        channel=NOTIF_CHANNEL,
+                        link_names=True,
+                        blocks=block,
+                        thread_ts=project_thread
+                    )
 
-                slack_app.client.chat_postMessage(
-                    channel="log_notion_notifs",
-                    link_names=True,
-                    blocks=block,
-                    thread_ts=project_thread
-                )
+slack_app.client.usergroups_users_update(usergroup=PROJECT_DRI_USER_GROUP, users=",".join(project_dris))
 
-slack_app.client.usergroups_users_update(usergroup=os.getenv('PROJECT_DRI_USER_GROUP'), users=",".join(project_dris))
-
-slack_app.client.usergroups_users_update(usergroup=os.getenv('TASK_DRI_USER_GROUP'), users=",".join(task_dris))
+slack_app.client.usergroups_users_update(usergroup=TASK_DRI_USER_GROUP, users=",".join(task_dris))
