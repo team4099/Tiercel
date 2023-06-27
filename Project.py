@@ -66,6 +66,9 @@ class Project:
 
         if self.timeline == None:
             ret_val.append("No existing timeline for project.")
+
+        if all(task is None for task in self.tasks):
+            ret_val.append("No tasks created for project.")
         
         return ret_val
     
