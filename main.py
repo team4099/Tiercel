@@ -117,9 +117,10 @@ for project in roadmap.projects:
             project_thread = response.get("ts")
 
         for task in project.tasks:
-
+	    if task is None:
+		continue
+		    
             if task.status != Status.DONE:
-
                 task_dri_mentions = [] 
                 for user in task.dri_emails:
                     email = user.email
