@@ -76,6 +76,9 @@ class Project:
         ret_val = False
 
         for task in self.tasks:
+            if task is None:
+                continue
+
             ret_val = ret_val or task.has_issues()
         
         return ret_val
@@ -84,6 +87,9 @@ class Project:
         ret_val = True
 
         for task in self.tasks:
+            if task is None:
+                continue
+                
             ret_val = ret_val and task.status == Status.DONE
         
         return ret_val
