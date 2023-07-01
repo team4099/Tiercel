@@ -89,5 +89,9 @@ class Task:
         return ret_val
     
     def has_issues(self) -> bool:
-        return len(self.info()) != 0 or len(self.warnings()) != 0 or len(self.errors()) != 0 
+        return (
+            len(self.info()) != 0 
+            or len(self.warnings()) != 0 
+            or len(self.errors()) != 0 
+        ) and self.status != Status.DONE
 
