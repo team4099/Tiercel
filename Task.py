@@ -81,7 +81,7 @@ class Task:
         ret_val = []
 
         if len(self.dri_emails) == 0:
-            ret_val.append("No Task DRI(s) Assigned.")
+            ret_val.append("No Task Lead(s) Assigned.")
 
         if self.timeline == None:
             ret_val.append("No Due Date for Task.")
