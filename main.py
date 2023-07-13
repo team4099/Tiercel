@@ -32,7 +32,7 @@ project_dris = []
 task_dris = []
 
 for project in roadmap.projects:
-    if project.status != Status.DONE:
+    if project.status == Status.IN_PROGRESS:
 
         project_dri_mentions = [] 
         for user in project.dri_emails:
