@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from notion_client import Client
 import re
 import datetime
+from time import sleep
 from SlackWrapper import SlackWrapper
 import json
 from RoadMap import RoadMap
@@ -113,6 +114,7 @@ for project in roadmap.projects:
                 link_names=True,
                 blocks=block
             )
+            sleep(2)  # Used to circumvent Slack rate limits
 
             project_thread = response.get("ts")
 
@@ -198,6 +200,8 @@ for project in roadmap.projects:
                         blocks=block,
                         thread_ts=project_thread
                     )
+                    sleep(2)  # Used to circumvent Slack rate limits
+	
 
 slack_app.client.usergroups_users_update(usergroup=PROJECT_DRI_USER_GROUP, users=",".join(project_dris))
 
