@@ -14,7 +14,7 @@ PROJECT_DB = "adddfaea7fa7475eb04e4fc530af6932"
 DRI_USER_GROUP = "S058TKUAX60"
 PROJECT_DRI_USER_GROUP = "S05A84CKV09"
 TASK_DRI_USER_GROUP = "S059NSGGY1L"
-NOTIF_CHANNEL="#z_playground"
+NOTIF_CHANNEL = "#z_playground"
 
 load_dotenv()
 
@@ -34,7 +34,7 @@ task_dris = []
 for project in roadmap.projects:
     if project.status == Status.IN_PROGRESS:
 
-        project_dri_mentions = [] 
+        project_dri_mentions = []
         for user in project.dri_emails:
             email = user.email
 
@@ -56,19 +56,19 @@ for project in roadmap.projects:
                     "type": "mrkdwn",
                     "text": f"*<{project.project_url}|{project.project_name}>*",
                 }
-		    },
+            },
         ]
 
         if (len(project_dri_mentions) >= 1):
-                block.append(
-                        {
+            block.append(
+                {
                     "type": "section",
                     "text": {
                         "type": "mrkdwn",
                         "text": f':office_worker:: {""" """.join(project_dri_mentions)}'
                     }
                 },
-                )
+            )
 
         project_info = "\n• ".join(project.info())
         project_warning = "\n• ".join(project.warnings())
@@ -81,9 +81,9 @@ for project in roadmap.projects:
                     "type": "mrkdwn",
                     "text": f":information_source::\n• {project_info}"
                 }
-		    }
+            }
             )
-    
+
         if len(project_warning) >= 1:
             block.append({
                 "type": "section",
@@ -92,7 +92,7 @@ for project in roadmap.projects:
                     "text": f":warning::\n• {project_warning}"
                 }
             })
-        
+
         if len(project_errors) >= 1:
             block.append({
                 "type": "section",
@@ -108,19 +108,18 @@ for project in roadmap.projects:
             }]
 
         if (project.has_issues() or project.has_sub_issues()):
-
             response = slack_app.client.chat_postMessage(
                 channel=NOTIF_CHANNEL,
                 link_names=True,
                 blocks=block
             )
-            sleep(2)  # Used to circumvent Slack rate limits
+            sleep(1)  # Used to circumvent Slack rate limits
 
             project_thread = response.get("ts")
 
-        for task in project.tasks:	    
+        for task in project.tasks:
             if task and task.status != Status.DONE:
-                task_dri_mentions = [] 
+                task_dri_mentions = []
                 for user in task.dri_emails:
                     email = user.email
 
@@ -134,26 +133,26 @@ for project in roadmap.projects:
                         task_dri_mentions.append(f"<@{uid}>")
                     except KeyError:
                         continue
-                
+
                 block = [
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"*<{task.notion_url}|{task.task_name}>*",
-                    }
-                },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"*<{task.notion_url}|{task.task_name}>*",
+                        }
+                    },
                 ]
 
                 if (len(task_dri_mentions) >= 1):
                     block.append(
-                            {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f':office_worker:: {""" """.join(task_dri_mentions)}'
-                        }
-                    },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f':office_worker:: {""" """.join(task_dri_mentions)}'
+                            }
+                        },
                     )
 
                 task_info = "\n• ".join(task.info())
@@ -169,7 +168,7 @@ for project in roadmap.projects:
                         }
                     }
                     )
-            
+
                 if len(task_warning) >= 1:
                     block.append({
                         "type": "section",
@@ -178,7 +177,7 @@ for project in roadmap.projects:
                             "text": f":warning:\n• {task_warning}"
                         }
                     })
-                
+
                 if len(task_errors) >= 1:
                     block.append({
                         "type": "section",
@@ -192,7 +191,7 @@ for project in roadmap.projects:
                     {
                         "type": "divider"
                     }]
-                
+
                 if task.has_issues():
                     slack_app.client.chat_postMessage(
                         channel=NOTIF_CHANNEL,
@@ -200,8 +199,7 @@ for project in roadmap.projects:
                         blocks=block,
                         thread_ts=project_thread
                     )
-                    sleep(2)  # Used to circumvent Slack rate limits
-	
+                    sleep(1)  # Used to circumvent Slack rate limits
 
 slack_app.client.usergroups_users_update(usergroup=PROJECT_DRI_USER_GROUP, users=",".join(project_dris))
 
