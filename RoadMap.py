@@ -31,13 +31,12 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                     task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
                     project_url = project["url"]
                 )
-            print([task.task_name for task in self.tasks if task.related_project_ids in new_project.project_id])
 
             projects.append(
                 new_project
             )
 
-            new_project.tasks = [find_task_by_id(self, task_name) for task_name in new_project.task_ids]
+            new_project.tasks = [task for task in self.tasks if new_project.project_id in task.related_project_ids]
 
     return projects
     
