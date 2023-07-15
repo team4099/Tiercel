@@ -37,6 +37,8 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
             )
 
             new_project.tasks = [find_task_by_id(self, task_name) for task_name in new_project.task_ids]
+            print(new_project.tasks)
+
     return projects
     
 def parse_timeline(date_dict: dict) -> Optional[DateRange]:
