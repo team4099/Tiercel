@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
 from notion_client import Client
-import re
-import datetime
 from time import sleep
 from SlackWrapper import SlackWrapper
 import json

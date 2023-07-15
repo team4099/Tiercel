@@ -31,7 +31,7 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                     task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
                     project_url = project["url"]
                 )
-            print(project["properties"]["Tasks"]["relation"])
+            print([task for task in self.tasks for id in new_project.task_ids if task.task_id == id])
 
             projects.append(
                 new_project
