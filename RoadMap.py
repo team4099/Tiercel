@@ -12,9 +12,28 @@ class RoadMap:
     
     def __init__(self, project_db_identifier: str, task_db_identifier: str, notion_client):
         project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
+        project_results = project_dict.get("results")
+
+        # Paginate through all the different projects if it ever overflows the Notion limit (precautionary measure).
+        while project_dict.get("has_more"):
+            project_dict = notion_client.databases.query(
+                database_id=project_db_identifier,
+                start_cursor=project_dict["next_cursor"]
+            )
+            if new_results := project_dict.get("results"):
+                project_results.append(new_results)
+
         task_dict = notion_client.databases.query(database_id = task_db_identifier)
-        print(task_dict["has_more"])
-        task_dict = task_dict.get("results")
+        task_results = task_dict.get("results")
+
+        # Paginate through all the different tasks
+        while task_dict.get("has_more"):
+            task_dict = notion_client.databases.query(
+                database_id=task_db_identifier,
+                start_cursor=task_dict["next_cursor"]
+            )
+            if new_results := task_dict.get("results"):
+                task_results.append(new_results)
 
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
