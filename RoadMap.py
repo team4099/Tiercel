@@ -1,3 +1,4 @@
+from json import load
 from typing import List, Optional
 from Project import Project, DateRange
 from User import User
@@ -36,10 +37,8 @@ class RoadMap:
             if task_dict.get("results"):
                 task_results.append(task_dict.get("results"))
 
-        print(task_results)
-
-        self.tasks = parse_task_dict(self, task_dict)
-        self.projects = parse_project_dict(self, project_dict)
+        self.tasks = parse_task_dict(self, load(task_dict))
+        self.projects = parse_project_dict(self, load(project_dict))
         
 
 def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
