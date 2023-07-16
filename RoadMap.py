@@ -14,8 +14,6 @@ class RoadMap:
         project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
         task_dict = notion_client.databases.query(database_id = task_db_identifier).get("results")
 
-        print(__import__("json").dumps(task_dict, indent=2))
-
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
         
@@ -62,6 +60,9 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
     for task in task_dict:
+        if task["properties"]["Project"]["Name"] == "scouting system visualizations revamp":
+            print(__import__("json").dumps(task, indent=2))
+
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
                     task_name = task["properties"]["Name"]["title"][0]["text"]["content"],
