@@ -1,4 +1,3 @@
-from json import load
 from typing import List, Optional
 from Project import Project, DateRange
 from User import User
@@ -37,8 +36,8 @@ class RoadMap:
             if task_dict.get("results"):
                 task_results.append(task_dict.get("results"))
 
-        self.tasks = parse_task_dict(self, load(task_dict))
-        self.projects = parse_project_dict(self, load(project_dict))
+        self.tasks = parse_task_dict(self, task_dict)
+        self.projects = parse_project_dict(self, project_dict)
         
 
 def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
@@ -83,6 +82,8 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
     for task in task_dict:
+        print(type(task))
+        print(task)
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
                     task_name = task["properties"]["Name"]["title"][0]["text"]["content"],
