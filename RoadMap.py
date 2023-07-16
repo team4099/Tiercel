@@ -3,8 +3,8 @@ from Project import Project, DateRange
 from User import User
 from datetime import datetime
 from Task import Task, Priority
-import json
 from Status import Status
+
 
 class RoadMap:
     projects: List[Project]
@@ -36,7 +36,7 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                 new_project
             )
 
-            new_project.tasks = [task for task in self.tasks if new_project.project_id in task.related_project_ids]
+            print([task for task in self.tasks])
 
     return projects
     
