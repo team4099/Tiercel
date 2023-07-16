@@ -20,8 +20,8 @@ class RoadMap:
                 database_id=project_db_identifier,
                 start_cursor=project_dict["next_cursor"]
             )
-            if new_results := project_dict.get("results"):
-                project_results.append(new_results)
+            if project_dict.get("results"):
+                project_results.append(project_dict.get("results"))
 
         task_dict = notion_client.databases.query(database_id = task_db_identifier)
         task_results = task_dict.get("results")
@@ -32,8 +32,8 @@ class RoadMap:
                 database_id=task_db_identifier,
                 start_cursor=task_dict["next_cursor"]
             )
-            if new_results := task_dict.get("results"):
-                task_results.append(new_results)
+            if task_dict.get("results"):
+                task_results.append(task_dict.get("results"))
 
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
