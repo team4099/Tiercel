@@ -21,7 +21,7 @@ class RoadMap:
                 start_cursor=project_dict["next_cursor"]
             )
             if project_dict.get("results"):
-                project_results.append(project_dict.get("results"))
+                project_results.extend(project_dict.get("results"))
 
         task_dict = notion_client.databases.query(database_id = task_db_identifier)
         task_results = task_dict.get("results")
@@ -33,7 +33,7 @@ class RoadMap:
                 start_cursor=task_dict["next_cursor"]
             )
             if task_dict.get("results"):
-                task_results.append(task_dict.get("results"))
+                task_results.extend(task_dict.get("results"))
 
         self.tasks = parse_task_dict(self, task_results)
         self.projects = parse_project_dict(self, project_results)
@@ -80,8 +80,8 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
+    print(type(task_dict))
     for task in task_dict:
-        print(task)
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
                     task_name = task["properties"]["Name"]["title"][0]["text"]["content"],
