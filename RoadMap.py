@@ -80,7 +80,6 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
-    print(type(task_dict))
     for task in task_dict:
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
