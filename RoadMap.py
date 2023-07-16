@@ -3,19 +3,40 @@ from Project import Project, DateRange
 from User import User
 from datetime import datetime
 from Task import Task, Priority
-import json
 from Status import Status
+
 
 class RoadMap:
     projects: List[Project]
     tasks: List[Task]
     
     def __init__(self, project_db_identifier: str, task_db_identifier: str, notion_client):
-        project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
-        task_dict = notion_client.databases.query(database_id = task_db_identifier).get("results")
+        project_dict = notion_client.databases.query(database_id = project_db_identifier)
+        project_results = project_dict.get("results")
 
-        self.tasks = parse_task_dict(self, task_dict)
-        self.projects = parse_project_dict(self, project_dict)
+        # Paginate through all the different projects if it ever overflows the Notion limit (precautionary measure).
+        while project_dict.get("has_more"):
+            project_dict = notion_client.databases.query(
+                database_id=project_db_identifier,
+                start_cursor=project_dict["next_cursor"]
+            )
+            if project_dict.get("results"):
+                project_results.extend(project_dict.get("results"))
+
+        task_dict = notion_client.databases.query(database_id = task_db_identifier)
+        task_results = task_dict.get("results")
+
+        # Paginate through all the different tasks
+        while task_dict.get("has_more"):
+            task_dict = notion_client.databases.query(
+                database_id=task_db_identifier,
+                start_cursor=task_dict["next_cursor"]
+            )
+            if task_dict.get("results"):
+                task_results.extend(task_dict.get("results"))
+
+        self.tasks = parse_task_dict(self, task_results)
+        self.projects = parse_project_dict(self, project_results)
         
 
 def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
@@ -36,7 +57,8 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                 new_project
             )
 
-            new_project.tasks = [find_task_by_id(self, task_name) for task_name in new_project.task_ids]
+            new_project.tasks = [find_task_by_id(self, task_id) for task_id in new_project.task_ids]
+
     return projects
     
 def parse_timeline(date_dict: dict) -> Optional[DateRange]:
@@ -73,6 +95,7 @@ def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
             tasks.append(
                 new_task
             )
+
     return tasks
 
 def parse_due_date(date_dict: dict) -> Optional[DateRange]:
