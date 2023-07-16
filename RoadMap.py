@@ -11,7 +11,7 @@ class RoadMap:
     tasks: List[Task]
     
     def __init__(self, project_db_identifier: str, task_db_identifier: str, notion_client):
-        project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
+        project_dict = notion_client.databases.query(database_id = project_db_identifier)
         project_results = project_dict.get("results")
 
         # Paginate through all the different projects if it ever overflows the Notion limit (precautionary measure).
