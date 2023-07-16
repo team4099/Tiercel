@@ -12,8 +12,9 @@ class RoadMap:
     
     def __init__(self, project_db_identifier: str, task_db_identifier: str, notion_client):
         project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
-        task_dict = notion_client.databases.query(database_id = task_db_identifier).get("results")
-        print(len(str(task_dict)))
+        task_dict = notion_client.databases.query(database_id = task_db_identifier)
+        print(task_dict["has_more"])
+        task_dict = task_dict.get("results")
 
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
