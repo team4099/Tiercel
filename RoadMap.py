@@ -20,7 +20,6 @@ class RoadMap:
                 database_id=project_db_identifier,
                 start_cursor=project_dict["next_cursor"]
             )
-            print(project_dict)
             if project_dict.get("results"):
                 project_results.append(project_dict.get("results"))
 
@@ -82,6 +81,7 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
     for task in task_dict:
+        print(task)
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
                     task_name = task["properties"]["Name"]["title"][0]["text"]["content"],
