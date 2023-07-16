@@ -31,8 +31,6 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                     task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
                     project_url = project["url"]
                 )
-            if "scouting system" in new_project.project_name and new_project.status == Status.IN_PROGRESS:
-                print(new_project.task_ids)
 
             projects.append(
                 new_project
@@ -62,8 +60,8 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
     for task in task_dict:
-        if "alliance selection" in task["properties"]["Name"]["title"]:
-            print(__import__("json").dumps(task, indent=2))
+        if task["id"] in {"75ce9f65-bb6e-4076-a6cd-5e9f04c103ab", "75ce9f65bb6e4076a6cd5e9f04c103ab"}:
+            print(task)
 
         if (len(task["properties"]["Name"]["title"]) >= 1):
             new_task = Task(
@@ -79,6 +77,7 @@ def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
             tasks.append(
                 new_task
             )
+
     return tasks
 
 def parse_due_date(date_dict: dict) -> Optional[DateRange]:
