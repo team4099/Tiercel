@@ -31,12 +31,14 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                     task_ids = [ task_reference["id"] for task_reference in project["properties"]["Tasks"]["relation"]],
                     project_url = project["url"]
                 )
+            if "scouting system" in new_project.project_name and new_project.status == Status.IN_PROGRESS:
+                print(new_project.task_ids)
 
             projects.append(
                 new_project
             )
 
-            new_project.tasks = [find_task_by_id(self, task.id) for task in self.tasks]
+            new_project.tasks = [find_task_by_id(self, task_id) for task_id in new_project.task_ids]
 
     return projects
     
