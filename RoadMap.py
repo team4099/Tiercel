@@ -60,8 +60,7 @@ def parse_dri_emails(dri_dict: dict) -> List[User]:
 def parse_task_dict(self, task_dict: List[dict]) -> List[Task]:
     tasks = []
     for task in task_dict:
-        print(task["properties"]["Project"])
-        if task["properties"]["Project"]["title"] == "scouting system visualizations revamp":
+        if task["properties"]["Project"]["relation"]["id"] == "eaeeaae41cb047d3bb9b022d097a2608":
             print(__import__("json").dumps(task, indent=2))
 
         if (len(task["properties"]["Name"]["title"]) >= 1):
