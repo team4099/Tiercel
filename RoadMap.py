@@ -14,6 +14,8 @@ class RoadMap:
         project_dict = notion_client.databases.query(database_id = project_db_identifier).get("results")
         task_dict = notion_client.databases.query(database_id = task_db_identifier).get("results")
 
+        print(__import__("json").dumps(task_dict, indent=2))
+
         self.tasks = parse_task_dict(self, task_dict)
         self.projects = parse_project_dict(self, project_dict)
         
@@ -36,7 +38,7 @@ def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
                 new_project
             )
 
-            print([task for task in self.tasks])
+            new_project.tasks = [find_task_by_id(self, task.id) for task in self.tasks]
 
     return projects
     
