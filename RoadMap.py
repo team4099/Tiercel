@@ -20,6 +20,7 @@ class RoadMap:
                 database_id=project_db_identifier,
                 start_cursor=project_dict["next_cursor"]
             )
+            print(project_dict)
             if project_dict.get("results"):
                 project_results.append(project_dict.get("results"))
 
