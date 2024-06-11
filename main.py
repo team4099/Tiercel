@@ -199,6 +199,9 @@ for project in roadmap.projects:
                     )
                     sleep(1)  # Used to circumvent Slack rate limits
 
-slack_app.client.usergroups_users_update(usergroup=PROJECT_DRI_USER_GROUP, users=",".join(project_dris))
 
-slack_app.client.usergroups_users_update(usergroup=TASK_DRI_USER_GROUP, users=",".join(task_dris))
+if project_dris:
+    slack_app.client.usergroups_users_update(usergroup=PROJECT_DRI_USER_GROUP, users=",".join(project_dris))
+
+if task_dris:
+    slack_app.client.usergroups_users_update(usergroup=TASK_DRI_USER_GROUP, users=",".join(task_dris))
