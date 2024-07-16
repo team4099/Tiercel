@@ -42,9 +42,9 @@ class RoadMap:
 def parse_project_dict(self, project_dict: List[dict]) -> List[Project]:
     projects = []
     for project in project_dict:
-        if (len(project["properties"]["Name"]["title"]) >= 1):
+        if (len(project["properties"]["prototype"]["title"]) >= 1):
             new_project = Project(
-                    name = project["properties"]["Name"]["title"][0]["text"]["content"],
+                    name = project["properties"]["prototype"]["title"][0]["text"]["content"],
                     prj_id = project["id"],
                     status = Status.from_str(project["properties"]["Status"]["status"]["name"]),
                     timeline = parse_timeline(project["properties"]["Timeline"]["date"]),
